@@ -9,10 +9,27 @@ const path = require('path');
 // CONFIGURACIÓN PRINCIPAL
 // =======================================================
 
+// Soporta varios grupos separados por coma en .env
+// Ejemplo:
+// ALLOWED_GROUP_IDS=584146568168-1598410466@g.us,120363000000000000@g.us
 const ALLOWED_GROUP_IDS = (process.env.ALLOWED_GROUP_IDS || '')
   .split(',')
   .map(id => id.trim())
   .filter(Boolean);
+
+// Directorio persistente.
+// En local puede ser ./data.
+// En Docker/Contabo será /app/data si lo defines en docker-compose.
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const MEDIA_DIR = process.env.MEDIA_DIR || path.join(__dirname, 'media');
+
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+if (!fs.existsSync(MEDIA_DIR)) {
+  fs.mkdirSync(MEDIA_DIR, { recursive: true });
+}
 
 // Límites sanos para grupo de amigos
 const LIMITS = {
@@ -21,7 +38,7 @@ const LIMITS = {
 };
 
 // Archivo donde se guarda el contador diario
-const STATS_FILE = path.join(__dirname, 'pichitobot-stats.json');
+const STATS_FILE = path.join(DATA_DIR, 'pichitobot-stats.json');
 
 // =======================================================
 // ÁREA PARA TUS COMANDOS Y RESPUESTAS
@@ -33,7 +50,14 @@ const STATS_FILE = path.join(__dirname, 'pichitobot-stats.json');
 // type: 'includes'
 // El mensaje puede contener esa frase dentro del texto.
 //
-// Puedes agregar todos los comandos que quieras aquí.
+// type: 'word'
+// Detecta palabra o frase completa dentro de una oración.
+//
+// Nota:
+// El texto se normaliza automáticamente:
+// - minúsculas
+// - sin acentos
+// - sin signos como ¿?¡!.,;:
 //
 
 const COMMANDS = [
@@ -43,7 +67,7 @@ const COMMANDS = [
       'hola pichitobot',
       'buenas pichitobot'
     ],
-    response: 'Hola 👋 soy PichitoBot. ¿Qué fue,mano sale valito?'
+    response: 'Hola 👋 soy PichitoBot. ¿Qué fue, mano sale valito?'
   },
   {
     type: 'includes',
@@ -52,7 +76,7 @@ const COMMANDS = [
       'pichitobot como funcionas'
     ],
     response:
-      'Picho funciona así: escribes el comando, PichitoBot lo reconoce y responde con una respuesta pregrabada, Prueba con "pichitobot comandos"'
+      'Picho funciona así: escribes el comando, PichitoBot lo reconoce y responde con una respuesta pregrabada. Prueba con "pichitobot comandos".'
   },
   {
     type: 'exact',
@@ -64,122 +88,69 @@ const COMMANDS = [
       'Comandos disponibles:\n\n' +
       '1. Hola pichitobot\n' +
       '2. pichitobot dinos como funcionas\n' +
-      '3. pichitobot ayuda\n'+
-      '4. Que porqueria \n'+
-      '5. Pichitobot quien es el mas picho?\n'+
-      '6. Sale un valorant?\n'+
-      '7. Whats sale? \n'+
-      '8. quien \n'+
-      '9. negro\n'+
-      '10. negra \n'+
-      '11. '
+      '3. pichitobot ayuda\n' +
+      '4. Sale un valorant?\n' +
+      '5. Whats sale?\n' +
+      '6. quien\n' +
+      '7. negro\n' +
+      '8. negra\n' +
+      '9. kawaii / kawai / conchita\n' +
+      '10. yompina'
   },
-    {
+  {
     type: 'exact',
     triggers: [
-      'Que porquería'
+      'sale un valorant'
+    ],
+    response: 'Sisa mano sisa sisa'
+  },
+  {
+    type: 'exact',
+    triggers: [
+      'what sale',
+      'whats sale'
+    ],
+    response: 'Un valito? by PichitoBot'
+  },
+  {
+    type: 'exact',
+    triggers: [
+      'quien'
+    ],
+    response: 'yo'
+  },
+  {
+    type: 'word',
+    triggers: [
+      'negro'
+    ],
+    response: 'negro y oscuro como mi alma'
+  },
+  {
+    type: 'word',
+    triggers: [
+      'negra'
+    ],
+    response: 'Uy no mano'
+  },
+  {
+    type: 'word',
+    triggers: [
+      'israel',
+      'is rael'
     ],
     response:
-      'Mamame las 2 bolas'
+      'Israel, Israel, qué bonito es Israel.\n' +
+      'PichitoBot fue patrocinado por el grandioso y legítimo estado de Israel.'
   },
   {
-    type: 'exact',
+    type: 'word',
     triggers: [
-      'pichitobot quien es el mas picho'
+      'estoy en el super'
     ],
-    response: 'El más picho del grupo claramente es Picho, nadie es mas negro que ese mardito'
-  },
- {
-   type: 'exact',
-   triggers: [
-     'Sale un valorant?'
-   ],
-   response: 'Sisa mano sisa sisa'
- },
- {
-   type: 'exact',
-   triggers: [
-     'What sale?'
-   ],
-   response: 'Un valito? by pichitobot'
- },
-  {
-   type: 'exact',
-   triggers: [
-     'quien'
-   ],
-   response: 'Me la mamo ma rika'
- },
- {
-  type: 'word',
-  triggers: [
-    'negro'
-  ],
-  response: 'wakala'
-},
- {
-  type: 'word',
-  triggers: [
-    'negra'
-  ],
-  response: 'Uy no mano, negras no'
-},
- {
-  type: 'word',
-  triggers: [
-    'cabra'
-  ],
-  response: 'Nigga HOE'
-},
-  {
-    type: 'exact',
-    triggers: [
-      'Probame aqui'
-    ],
-    response: 'Y si mejor te arreguindais de estas?'
-  },
+    response: 'Noooooooojjjjjjooooooooodddddaaaaaaaaaaaaaaa apúrate.'
+  }
 
- {
-  type: 'word',
-  triggers: [
-    'Israel',
-    'israel',
-    'is rael'
-  ],
-  response: 'Israel, Israel, qué bonito es Israel, Israel, Israel, qué bonito es Israel, Israel, Israel, en tus tierras bailaré, Israel, Israel, qué bonito es Israel \n' +
-  'Pichito bot fue patrocinado por el grandioso y legitimo estado de Israel'
-},
- {
-  type: 'word',
-  triggers: [
-    'Judio'
-  ],
-  response: 'A mi no me van a quitar mi prepucio'
-},
- {
-  type: 'word',
-  triggers: [
-    'Prepucio'
-  ],
-  response: 'Me vas a arropar con tu prepucio o quereis que te arrope con el mio?'
-},
- {
-  type: 'word',
-  triggers: [
-    'Tesoro',
-    'tesorito',
-    'mi tesoro mas preciado'
-  ],
-  response: 'Yo mi tesorito lo tengo intacto pero pregunta por el de Gbu'
-},
-
- {
-  type: 'word',
-  triggers: [
-    'Estoy en el super'
-  ],
-  response: 'Noooooooojjjjjjooooooooodddddaaaaaaaaaaaaaaa Gbuuuu apurate, vos si hartais mardito'
-},
   // EJEMPLO PARA AGREGAR OTRO COMANDO:
   //
   // {
@@ -191,13 +162,59 @@ const COMMANDS = [
   // },
   //
   // {
-  //   type: 'includes',
+  //   type: 'word',
   //   triggers: [
-  //     'pichitobot que opinas de minecraft'
+  //     'minecraft'
   //   ],
-  //   response: 'Minecraft es paz, hasta que aparece un creeper detrás de ti.'
+  //   response: 'Minecraft es paz hasta que aparece un creeper detrás de ti.'
   // }
 ];
+
+// =======================================================
+// AUDIOS ESPECIALES
+// =======================================================
+//
+// El archivo debe estar en la carpeta media.
+// Ejemplo:
+// media/kawaii.ogg
+//
+// words:
+// Palabras/frases exactas ya normalizadas.
+//
+// patterns:
+// Regex para detectar derivados como kawaaaiiiii.
+//
+
+const AUDIO_TRIGGERS = {
+  kawaii: {
+    file: 'kawaii.ogg',
+    asVoice: true,
+    words: [
+      'kawaii',
+      'kawai',
+      'conchita'
+    ],
+    patterns: [
+      /\bkawa+i+\b/i,       // kawai, kawaii, kawaaaiiiii
+      /\bconchi+ta+\b/i    // conchita, conchitaa, conchiiiiita
+    ]
+  }
+
+  // EJEMPLO PARA OTRO AUDIO:
+  //
+  // minecraft: {
+  //   file: 'minecraft.ogg',
+  //   asVoice: true,
+  //   words: [
+  //     'minecraft',
+  //     'maincra'
+  //   ],
+  //   patterns: [
+  //     /\bminecra+ft\b/i,
+  //     /\bmaincra+\b/i
+  //   ]
+  // }
+};
 
 // =======================================================
 // ESTADO INTERNO DEL BOT
@@ -205,6 +222,10 @@ const COMMANDS = [
 
 const repliesThisMinute = [];
 let yompinaStep = 0;
+
+// =======================================================
+// FUNCIONES DE UTILIDAD
+// =======================================================
 
 function getTodayKey() {
   const now = new Date();
@@ -228,9 +249,9 @@ function loadStats() {
 
   try {
     const raw = fs.readFileSync(STATS_FILE, 'utf8');
-    const stats = JSON.parse(raw);
+    const currentStats = JSON.parse(raw);
 
-    if (stats.date !== today) {
+    if (currentStats.date !== today) {
       return {
         date: today,
         repliesToday: 0
@@ -238,11 +259,12 @@ function loadStats() {
     }
 
     return {
-      date: stats.date,
-      repliesToday: Number(stats.repliesToday) || 0
+      date: currentStats.date,
+      repliesToday: Number(currentStats.repliesToday) || 0
     };
   } catch (error) {
     console.error('No se pudo leer el archivo de estadísticas. Se reiniciará el contador diario.');
+
     return {
       date: today,
       repliesToday: 0
@@ -250,14 +272,14 @@ function loadStats() {
   }
 }
 
-function saveStats(stats) {
-  fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf8');
+function saveStats(currentStats) {
+  fs.writeFileSync(STATS_FILE, JSON.stringify(currentStats, null, 2), 'utf8');
 }
 
 let stats = loadStats();
 
 function normalizeText(text) {
-  return text
+  return String(text || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -265,12 +287,36 @@ function normalizeText(text) {
     .replace(/\s+/g, ' ')
     .trim();
 }
-function textHasWholeWord(text, word) {
-  const safeWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(^|\\s)${safeWord}(\\s|$)`, 'i');
+
+function escapeRegex(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasWholeWord(text, trigger) {
+  const safeTrigger = escapeRegex(trigger);
+
+  // Detecta palabra/frase completa.
+  // "negro" detecta "pantalon negro"
+  // pero no detecta "negroni".
+  const regex = new RegExp(`(^|\\s)${safeTrigger}(\\s|$)`, 'i');
 
   return regex.test(text);
 }
+
+function textHasWholeWord(text, word) {
+  return hasWholeWord(text, normalizeText(word));
+}
+
+// =======================================================
+// COMANDO ESPECIAL YOMPINA
+// =======================================================
+//
+// Lógica:
+// Mensaje 1 con yompina => FHAAAAA
+// Mensaje 2 seguido con yompina => BI
+// Se reinicia.
+// Si llega otro mensaje sin yompina, se rompe la secuencia.
+//
 
 function getYompinaResponse(text) {
   const hasYompina = textHasWholeWord(text, 'yompina');
@@ -289,20 +335,9 @@ function getYompinaResponse(text) {
   return 'BI';
 }
 
-function escapeRegex(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function hasWholeWord(text, trigger) {
-  const safeTrigger = escapeRegex(trigger);
-
-  // Detecta palabra/frase completa.
-  // "negro" detecta "pantalon negro"
-  // pero no detecta "negroni".
-  const regex = new RegExp(`(^|\\s)${safeTrigger}(\\s|$)`, 'i');
-
-  return regex.test(text);
-}
+// =======================================================
+// DETECCIÓN DE COMANDOS
+// =======================================================
 
 function findCommands(text) {
   const matchedCommands = [];
@@ -338,6 +373,24 @@ function findCommands(text) {
   return matchedCommands;
 }
 
+function matchesAudioTrigger(text, config) {
+  const wordMatch = config.words.some(word => {
+    return textHasWholeWord(text, word);
+  });
+
+  if (wordMatch) return true;
+
+  const patternMatch = config.patterns.some(pattern => {
+    return pattern.test(text);
+  });
+
+  return patternMatch;
+}
+
+// =======================================================
+// LÍMITES DE RESPUESTAS
+// =======================================================
+
 function cleanOldMinuteReplies() {
   const now = Date.now();
   const oneMinuteAgo = now - 60_000;
@@ -348,7 +401,6 @@ function cleanOldMinuteReplies() {
 }
 
 function canReply() {
-  // Reiniciar contador diario si cambió el día
   const today = getTodayKey();
 
   if (stats.date !== today) {
@@ -360,7 +412,6 @@ function canReply() {
     saveStats(stats);
   }
 
-  // Límite por minuto
   cleanOldMinuteReplies();
 
   if (repliesThisMinute.length >= LIMITS.MAX_REPLIES_PER_MINUTE) {
@@ -370,7 +421,6 @@ function canReply() {
     };
   }
 
-  // Límite por día
   if (stats.repliesToday >= LIMITS.MAX_REPLIES_PER_DAY) {
     return {
       allowed: false,
@@ -383,6 +433,7 @@ function canReply() {
     reason: 'OK'
   };
 }
+
 function registerReply() {
   const now = Date.now();
 
@@ -391,6 +442,10 @@ function registerReply() {
   stats.repliesToday += 1;
   saveStats(stats);
 }
+
+// =======================================================
+// ENVÍO SEGURO DE RESPUESTAS
+// =======================================================
 
 async function safeReply(msg, response) {
   const permission = canReply();
@@ -405,6 +460,7 @@ async function safeReply(msg, response) {
 
   console.log(`Respuesta enviada. Total de hoy: ${stats.repliesToday}/${LIMITS.MAX_REPLIES_PER_DAY}`);
 }
+
 async function safeSendAudio(chat, audioPath, options = {}) {
   const permission = canReply();
 
@@ -429,54 +485,38 @@ async function safeSendAudio(chat, audioPath, options = {}) {
   console.log(`Audio enviado. Total de hoy: ${stats.repliesToday}/${LIMITS.MAX_REPLIES_PER_DAY}`);
 }
 
-const AUDIO_TRIGGERS = {
-  kawaii: {
-    file: 'kawaii.ogg',
-    asVoice: true,
+// =======================================================
+// VALIDACIONES DE ARRANQUE
+// =======================================================
 
-    // Palabras exactas
-    words: [
-      'kawaii',
-      'kawai',
-      'conchita'
-    ],
-
-    // Patrones flexibles
-    patterns: [
-      /\bkawa+i+\b/i,      // kawai, kawaii, kawaaaiiiii
-      /\bconchi+ta+\b/i   // conchita, conchitaa, conchiiiiita
-    ]
-  }
-};
-
-function matchesAudioTrigger(text, config) {
-  const wordMatch = config.words.some(word => {
-    return textHasWholeWord(text, normalizeText(word));
-  });
-
-  if (wordMatch) return true;
-
-  const patternMatch = config.patterns.some(pattern => {
-    return pattern.test(text);
-  });
-
-  return patternMatch;
+if (ALLOWED_GROUP_IDS.length === 0) {
+  console.warn('ADVERTENCIA: No hay grupos configurados en ALLOWED_GROUP_IDS.');
+  console.warn('Crea un archivo .env con ALLOWED_GROUP_IDS=ID_DEL_GRUPO@g.us');
 }
+
 // =======================================================
 // CLIENTE DE WHATSAPP
 // =======================================================
 
+const puppeteerConfig = {
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage'
+  ]
+};
+
+if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+  puppeteerConfig.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+}
+
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: 'pichitobot'
+    clientId: process.env.WWEBJS_CLIENT_ID || 'pichitobot',
+    dataPath: path.join(DATA_DIR, 'wwebjs_auth')
   }),
-  puppeteer: {
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox'
-    ]
-  }
+  puppeteer: puppeteerConfig
 });
 
 client.on('qr', qr => {
@@ -493,9 +533,11 @@ client.on('auth_failure', msg => {
 });
 
 client.on('ready', () => {
-console.log('PichitoBot está activo.');
-console.log(`Grupos permitidos: ${ALLOWED_GROUP_IDS.join(', ') || 'ninguno configurado'}`);
-console.log(`Respuestas de hoy: ${stats.repliesToday}/${LIMITS.MAX_REPLIES_PER_DAY}`);
+  console.log('PichitoBot está activo.');
+  console.log(`DATA_DIR: ${DATA_DIR}`);
+  console.log(`MEDIA_DIR: ${MEDIA_DIR}`);
+  console.log(`Grupos permitidos: ${ALLOWED_GROUP_IDS.join(', ') || 'ninguno configurado'}`);
+  console.log(`Respuestas de hoy: ${stats.repliesToday}/${LIMITS.MAX_REPLIES_PER_DAY}`);
 });
 
 client.on('message', async msg => {
@@ -508,8 +550,8 @@ client.on('message', async msg => {
     // Solo grupos
     if (!chat.isGroup) return;
 
-    // Solo el grupo permitido
-  if (!ALLOWED_GROUP_IDS.includes(chat.id._serialized)) return;
+    // Solo grupos permitidos
+    if (!ALLOWED_GROUP_IDS.includes(chat.id._serialized)) return;
 
     const text = normalizeText(msg.body);
 
@@ -519,7 +561,7 @@ client.on('message', async msg => {
     // Detecta palabras exactas o patrones como kawai, kawaii, kawaaaiiiii, conchita, etc.
     for (const audioConfig of Object.values(AUDIO_TRIGGERS)) {
       if (matchesAudioTrigger(text, audioConfig)) {
-        const audioPath = path.join(__dirname, 'media', audioConfig.file);
+        const audioPath = path.join(MEDIA_DIR, audioConfig.file);
 
         await safeSendAudio(chat, audioPath, {
           asVoice: audioConfig.asVoice
@@ -562,6 +604,19 @@ client.on('message', async msg => {
 
 client.on('disconnected', reason => {
   console.log('Cliente desconectado:', reason);
+});
+
+// Cierre limpio para Docker/PM2
+process.on('SIGINT', async () => {
+  console.log('Cerrando PichitoBot...');
+  await client.destroy();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Cerrando PichitoBot...');
+  await client.destroy();
+  process.exit(0);
 });
 
 client.initialize();

@@ -1,0 +1,14 @@
+services:
+  pichitobot:
+    build: .
+    container_name: pichitobot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      DATA_DIR: /app/data
+      TZ: America/Caracas
+    volumes:
+      - ./data:/app/data
+      - ./media:/app/media
