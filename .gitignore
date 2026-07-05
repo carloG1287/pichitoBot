@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno
+.env
+
+# Sesión local de WhatsApp Web
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Estadísticas locales
+pichitobot-stats.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Audios/media privados
+media/*.mp3
+media/*.ogg
+media/*.opus
+media/*.wav
+media/*.m4a
+!media/.gitkeep
