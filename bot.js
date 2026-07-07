@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
@@ -499,28 +499,40 @@ if (ALLOWED_GROUP_IDS.length === 0) {
 // =======================================================
 
 const puppeteerConfig = {
-  headless: true,
+  headless: 'new',
   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+  dumpio: true,
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
     '--disable-dev-shm-usage',
+
+    '--headless=new',
     '--disable-gpu',
     '--disable-software-rasterizer',
+
     '--disable-crash-reporter',
+    '--disable-crashpad',
+    '--disable-breakpad',
+    '--noerrdialogs',
+
     '--disable-extensions',
     '--disable-background-networking',
     '--disable-sync',
     '--disable-default-apps',
     '--mute-audio',
     '--no-first-run',
-    '--no-zygote'
+    '--no-zygote',
+
+    '--disable-features=Translate,BackForwardCache,AcceptCHFrame,MediaRouter,OptimizationHints,VizDisplayCompositor',
+    '--disable-component-extensions-with-background-pages',
+    '--disable-background-timer-throttling',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding',
+
+    '--window-size=1280,720'
   ]
 };
-
-if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-  puppeteerConfig.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-}
 
 const client = new Client({
   authStrategy: new LocalAuth({
