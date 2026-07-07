@@ -26,3 +26,8 @@ media/*.opus
 media/*.wav
 media/*.m4a
 !media/.gitkeep
+.env
+.env.save
+data/
+.wwebjs_auth/
+.wwebjs_cache/

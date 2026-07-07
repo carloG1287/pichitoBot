@@ -3,12 +3,15 @@ services:
     build: .
     container_name: pichitobot
     restart: unless-stopped
+    init: true
     env_file:
       - .env
     environment:
-      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
       DATA_DIR: /app/data
+      MEDIA_DIR: /app/media
       TZ: America/Caracas
     volumes:
       - ./data:/app/data
       - ./media:/app/media
+    shm_size: "1gb"
