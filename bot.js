@@ -500,11 +500,12 @@ if (ALLOWED_GROUP_IDS.length === 0) {
 
 const puppeteerConfig = {
   headless: 'new',
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
   dumpio: true,
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
+    '--disable-seccomp-filter-sandbox',
     '--disable-dev-shm-usage',
 
     '--headless=new',
@@ -520,9 +521,16 @@ const puppeteerConfig = {
     '--disable-background-networking',
     '--disable-sync',
     '--disable-default-apps',
+    '--disable-component-update',
+    '--disable-client-side-phishing-detection',
+
     '--mute-audio',
     '--no-first-run',
     '--no-zygote',
+    '--single-process',
+
+    '--password-store=basic',
+    '--use-mock-keychain',
 
     '--disable-features=Translate,BackForwardCache,AcceptCHFrame,MediaRouter,OptimizationHints,VizDisplayCompositor',
     '--disable-component-extensions-with-background-pages',
