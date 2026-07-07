@@ -117,21 +117,21 @@ const COMMANDS = [
     triggers: [
       'quien'
     ],
-    response: 'yo'
+    response: 'Me la mamo, ma rika'
   },
   {
     type: 'word',
     triggers: [
       'negro'
     ],
-    response: 'negro y oscuro como mi alma'
+    response: 'Wakala'
   },
   {
     type: 'word',
     triggers: [
       'negra'
     ],
-    response: 'Uy no mano'
+    response: 'Uy no mano, que asco'
   },
   {
     type: 'word',
