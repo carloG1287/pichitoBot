@@ -1,0 +1,54 @@
+name: Deploy PichitoBot to Contabo
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: pichitobot-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          printf '%s\n' "${{ secrets.CONTABO_SSH_KEY }}" > ~/.ssh/pichitobot_key
+          chmod 600 ~/.ssh/pichitobot_key
+
+          ssh-keyscan -p "${{ secrets.CONTABO_PORT }}" "${{ secrets.CONTABO_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy on Contabo
+        run: |
+          ssh -i ~/.ssh/pichitobot_key -p "${{ secrets.CONTABO_PORT }}" "${{ secrets.CONTABO_USER }}@${{ secrets.CONTABO_HOST }}" << 'EOF'
+            set -e
+
+            cd /srv/pichitoBot
+
+            echo "Actualizando repo..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Deteniendo contenedor anterior..."
+            docker compose -p pichitobot down --remove-orphans || true
+
+            echo "Limpiando locks de Chrome..."
+            find /srv/pichitoBot/data -name "Singleton*" -delete || true
+            find /srv/pichitoBot/data -name "DevToolsActivePort" -delete || true
+
+            echo "Reconstruyendo y levantando PichitoBot..."
+            docker compose -p pichitobot up -d --build --remove-orphans
+
+            echo "Estado final:"
+            docker compose -p pichitobot ps
+
+            echo "Logs recientes:"
+            docker compose -p pichitobot logs --since=2m --tail=80
+
+            echo "Deploy terminado correctamente."
+          EOF
