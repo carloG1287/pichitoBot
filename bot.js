@@ -500,10 +500,21 @@ if (ALLOWED_GROUP_IDS.length === 0) {
 
 const puppeteerConfig = {
   headless: true,
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage'
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--disable-software-rasterizer',
+    '--disable-crash-reporter',
+    '--disable-extensions',
+    '--disable-background-networking',
+    '--disable-sync',
+    '--disable-default-apps',
+    '--mute-audio',
+    '--no-first-run',
+    '--no-zygote'
   ]
 };
 
